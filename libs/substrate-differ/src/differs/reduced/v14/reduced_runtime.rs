@@ -15,7 +15,7 @@ impl From<&v14::PalletCallMetadata> for PalletData {
 	}
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ReducedRuntime {
 	// TODO: remove pub once we have an iterator
 	pub pallets: Vec<ReducedPallet>, // TODO: Could use a BTreeMap
@@ -87,15 +87,8 @@ mod test_reduced_conversion {
 				assert_eq!("System", first_pallet.name);
 
 				// Check calls
-				let calls: Vec<&PalletItem> = first_pallet
-					.items
-					.iter()
-					.filter(|&p| match p {
-						PalletItem::Call(_) => true,
-						_ => false,
-					})
-					.collect();
-				assert_eq!(10, calls.len());
+				let calls = first_pallet.items.iter().filter(|&p| matches!(p, PalletItem::Call(_)));
+				assert_eq!(10, calls.count());
 			}
 			_ => unreachable!(),
 		}
@@ -118,15 +111,8 @@ mod test_reduced_conversion {
 				assert_eq!("System", first_pallet.name);
 
 				// Check events
-				let events: Vec<&PalletItem> = first_pallet
-					.items
-					.iter()
-					.filter(|&p| match p {
-						PalletItem::Event(_) => true,
-						_ => false,
-					})
-					.collect();
-				assert_eq!(6, events.len());
+				let events = first_pallet.items.iter().filter(|&p| matches!(p, PalletItem::Event(_)));
+				assert_eq!(6, events.count());
 			}
 			_ => unreachable!(),
 		}
@@ -149,15 +135,8 @@ mod test_reduced_conversion {
 				assert_eq!("System", first_pallet.name);
 
 				// Check errors
-				let errors: Vec<&PalletItem> = first_pallet
-					.items
-					.iter()
-					.filter(|&p| match p {
-						PalletItem::Error(_) => true,
-						_ => false,
-					})
-					.collect();
-				assert_eq!(5, errors.len());
+				let errors = first_pallet.items.iter().filter(|&p| matches!(p, PalletItem::Error(_)));
+				assert_eq!(5, errors.count());
 				match &first_pallet.items[1] {
 					PalletItem::Call(c) => assert_eq!("remark", c.name),
 					_ => unreachable!(),
@@ -184,15 +163,8 @@ mod test_reduced_conversion {
 				assert_eq!("System", first_pallet.name);
 
 				// Check storages
-				let storages: Vec<&PalletItem> = first_pallet
-					.items
-					.iter()
-					.filter(|&p| match p {
-						PalletItem::Storage(_) => true,
-						_ => false,
-					})
-					.collect();
-				assert_eq!(16, storages.len());
+				let storages = first_pallet.items.iter().filter(|&p| matches!(p, PalletItem::Storage(_)));
+				assert_eq!(16, storages.count());
 			}
 			_ => unreachable!(),
 		}
@@ -215,15 +187,8 @@ mod test_reduced_conversion {
 				assert_eq!("System", first_pallet.name);
 
 				// Check constants
-				let constants: Vec<&PalletItem> = first_pallet
-					.items
-					.iter()
-					.filter(|&p| match p {
-						PalletItem::Constant(_) => true,
-						_ => false,
-					})
-					.collect();
-				assert_eq!(6, constants.len());
+				let constants = first_pallet.items.iter().filter(|&p| matches!(p, PalletItem::Constant(_)));
+				assert_eq!(6, constants.count());
 			}
 			_ => unreachable!(),
 		}
