@@ -2,7 +2,7 @@ use super::diff_result::DiffResult;
 use super::reduced_runtime::ReducedRuntime;
 use crate::differs::{reduced::reduced_pallet::ReducedPallet, reduced::*, DiffOptions, Differ};
 use frame_metadata::{RuntimeMetadata, RuntimeMetadata::*};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 // TODO: Placeholder, here we can convert from V14 to V13. We don't need to convert
 // once we can normalize.
@@ -63,13 +63,10 @@ impl Differ<ReducedPallet> for ReducedDiffer {
 		let r2 = &self.r2;
 
 		// We gather the Set of all indexes in both pallets
-		let indexes_1: HashMap<PalletId, &ReducedPallet> =
-			r1.pallets.iter().map(|pallet| ((pallet.name.clone(), pallet.index), pallet)).collect();
-		let indexes_2: HashMap<PalletId, &ReducedPallet> =
-			r2.pallets.iter().map(|pallet| ((pallet.name.clone(), pallet.index), pallet)).collect();
-		// println!("indicies {:?}", indexes_1);
-		let mut indexes: HashSet<PalletId> = indexes_1.keys().cloned().collect();
-		indexes.extend(indexes_2.keys().cloned());
+		let indexes_1 = r1.pallets.iter().map(|pallet| pallet.index);
+		let indexes_2: Vec<Index> = r2.pallets.iter().map(|pallet| pallet.index).collect();
+		let mut indexes: HashSet<PalletId> = indexes_1.into_iter().collect();
+		indexes.extend(indexes_2);
 		// println!("indexes_1 = {:?}", indexes_1);
 		// println!("indexes_2 = {:?}", indexes_2);
 		// println!("indexes = {:?}", indexes);
@@ -79,22 +76,22 @@ impl Differ<ReducedPallet> for ReducedDiffer {
 
 		let mut results = vec![];
 
-		indexes.into_iter().for_each(|key| {
-			let pallet_a = indexes_1.get(&key);
-			let pallet_b = indexes_2.get(&key);
+		indexes.iter().for_each(|&index| {
+			let pallet_a = self.r1.pallets.iter().find(|p| p.index == index);
+			let pallet_b = self.r2.pallets.iter().find(|p| p.index == index);
 
 			match (pallet_a, pallet_b) {
 				(Some(pallet_a), Some(pallet_b)) => {
 					let d = ReducedPallet::diff(pallet_a, pallet_b);
 
 					if let crate::differs::raw::change_type::ChangeType::Unchanged = d.change_type {
-						println!("no changes for pallet {:?}", key);
+						println!("no changes for pallet {:?}", index);
 					} else {
 						println!("d = {:#?}", d);
 					}
-					results.push((key, d));
+					results.push((index, d));
 				}
-				_ => todo!("write me"),
+				_ => println!("write me {} {:?} {:?}", index, pallet_a, pallet_b),
 			}
 		});
 

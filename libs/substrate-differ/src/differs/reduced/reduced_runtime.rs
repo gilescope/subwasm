@@ -154,7 +154,7 @@ impl ReducedRuntime {
 		items.append(&mut errors);
 		items.append(&mut storages);
 		items.append(&mut constants);
-		ReducedPallet { index: 0, name: name.into(), items }
+		ReducedPallet { index: p.index.into(), name: name.into(), items }
 	}
 
 	#[cfg(feature = "v14")]
